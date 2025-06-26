@@ -10,10 +10,17 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
+import os
+from dotenv import load_dotenv
+import smtplib  # add at the top
+from flask import request
+
+load_dotenv()
+
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+app.config['SECRET_KEY'] = os.environ.get("FLASK_KEY")
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///blog.db")
 ckeditor = CKEditor(app)
 Bootstrap5(app)
 
@@ -205,9 +212,35 @@ def delete_post(post_id):
 def about():
     return render_template("about.html")
 
-@app.route('/contact')
+def send_email(name, email, phone, message):
+    my_email = os.environ.get("EMAIL_USER")
+    my_password = os.environ.get("EMAIL_PASS")
+
+    with smtplib.SMTP("smtp.gmail.com", 587) as connection:
+        connection.starttls()
+        connection.login(user=my_email, password=my_password)
+        connection.sendmail(
+            from_addr=my_email,
+            to_addrs=my_email,
+            msg=f"Subject:New Contact Message\n\n"
+                f"Name: {name}\nEmail: {email}\nPhone: {phone}\nMessage:\n{message}"
+        )
+
+
+@app.route('/contact', methods=["GET", "POST"])
 def contact():
-    return render_template("contact.html")
+    msg_sent = False
+    if request.method == "POST":
+        name = request.form['name']
+        email = request.form['email']
+        phone = request.form['phone']
+        message = request.form['message']
+
+        # Send email
+        send_email(name, email, phone, message)
+        msg_sent = True
+
+    return render_template("contact.html", msg_sent=msg_sent)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
