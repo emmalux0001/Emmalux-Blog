@@ -1,0 +1,38 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Environment folders
+venv/
+env/
+ENV/
+
+# IDE folders
+.idea/
+*.iml
+
+# Databases
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# PyCharm settings
+*.ipr
+*.iws
+
+# HTML build cache or backups
+*.bak
+*.tmp
+
+# Others you specifically mentioned
+posts.bg
+
+# Optional: Ignore .env if you use one for secrets
+.env

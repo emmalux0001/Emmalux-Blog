@@ -1,0 +1,88 @@
+{% include "header.html" %}
+
+<header class="masthead" style="background-image: url('{{ post.img_url }}')">
+    <div class="container position-relative px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                <div class="post-heading">
+                    <h1>{{ post.title }}</h1>
+                    <h2 class="subheading">{{ post.subtitle }}</h2>
+                    <span class="meta">
+                        Posted by {{ post.author.name }} on {{ post.date }}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<article>
+    <div class="container px-4 px-lg-5">
+        <div class="row gx-4 gx-lg-5 justify-content-center">
+            <div class="col-md-10 col-lg-8 col-xl-7">
+                {{ post.body|safe }}
+
+                {% if current_user.is_authenticated and current_user.id == 1 %}
+                <div class="d-flex justify-content-end mb-4 gap-2">
+                    <a class="btn btn-primary" href="{{ url_for('edit_post', post_id=post.id) }}">
+                        <i class="fas fa-edit"></i> Edit Post
+                    </a>
+                    <a class="btn btn-danger" href="{{ url_for('delete_post', post_id=post.id) }}">
+                        <i class="fas fa-trash"></i> Delete Post
+                    </a>
+                </div>
+                {% endif %}
+
+                <div class="comments-section mt-5">
+                    <h3 class="comments-title mb-4">Comments</h3>
+
+                    {% if current_user.is_authenticated %}
+                    <div class="comment-form mb-5">
+                        {{ ckeditor.load() }}
+                        {{ ckeditor.config(name='text') }}
+                        <form method="POST" action="{{ url_for('show_post', post_id=post.id) }}">
+                            {{ form.hidden_tag() }}
+                            <div class="form-group mb-3">
+                                {{ form.text(class="form-control", placeholder="Write your comment here...") }}
+                            </div>
+                            <div class="form-group">
+                                {{ form.submit(class="btn btn-primary") }}
+                            </div>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <a href="{{ url_for('login') }}" class="alert-link">Login</a> or
+                        <a href="{{ url_for('register') }}" class="alert-link">Register</a> to leave a comment.
+                    </div>
+                    {% endif %}
+
+                    <div class="comments-list">
+                        {% if post.comments|length == 0 %}
+                        <div class="alert alert-secondary">No comments yet. Be the first to comment!</div>
+                        {% else %}
+                            {% for comment in post.comments|sort(attribute='date', reverse=True) %}
+                            <div class="comment mb-4 p-3 bg-light rounded">
+                                <div class="comment-header d-flex align-items-center mb-2">
+                                    <img src="{{ gravatar(comment.author.email, size=50) }}"
+                                         class="commenter-image rounded-circle me-3"
+                                         alt="{{ comment.author.name }}'s profile">
+                                    <div>
+                                        <h5 class="comment-author mb-0">{{ comment.author.name }}</h5>
+                                        <small class="text-muted">{{ comment.date }}</small>
+                                    </div>
+                                </div>
+                                <div class="comment-body mt-2">
+                                    {{ comment.text|safe }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</article>
+
+{% include "footer.html" %}
