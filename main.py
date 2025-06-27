@@ -12,17 +12,20 @@ from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
 import os
 from dotenv import load_dotenv
-import smtplib  # add at the top
+import smtplib
 from flask import request
 
 load_dotenv()
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get("FLASK_KEY")
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DB_URI", "sqlite:///blog.db")
+
+# ✅ Use DATABASE_URL if provided by Render
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "sqlite:///blog.db")
+
 ckeditor = CKEditor(app)
 Bootstrap5(app)
+
 
 # Configure Gravatar
 gravatar = Gravatar(
@@ -243,4 +246,6 @@ def contact():
     return render_template("contact.html", msg_sent=msg_sent)
 
 if __name__ == "__main__":
+    with app.app_context():
+        db.create_all()
     app.run(debug=False)
